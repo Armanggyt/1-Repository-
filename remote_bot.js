@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const { exec } = require('child_process');
 
 // Տեղադրիր քո բոտի TOKEN-ը
-const TOKEN = 'ՔՈ_ՏՈԿԵՆԸ_ԱՅՍՏԵՂ';
+const TOKEN = '8779023674:AAH6kGzWFL6dCriArmWdrskLsMRk1KSOs6I';
 const bot = new TelegramBot(TOKEN, { polling: true });
 
 console.log("🚀 Բոտը պատրաստ է կառավարել հեռախոսը...");
