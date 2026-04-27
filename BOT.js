@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { exec } = require('child_process');
 
-const TOKEN = '8779023674:AAH6kGzWFL6dCriArmWdrskLsMRk1KSOs6I';
+const TOKEN = '8622820107:AAFwVrD1OxvISSmYGkDFjsTj5sdo6ixpslQ';
 const bot = new TelegramBot(TOKEN, { polling: true });
 
 // Քո ծրագրերի ուղիները (Paths)
