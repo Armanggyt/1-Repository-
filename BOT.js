@@ -1,51 +1,49 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { exec } = require('child_process');
 
-const TOKEN = '8779023674:AAH6kGzWFL6dCriArmWdrskLsMRk1KSOs6I'; // Սա ուղղակի օրինակ է, դիր քո նորը
+const TOKEN = 'ՔՈ_ՏՈԿԵՆԸ';
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// Քո ծրագրերի ուղիները (Paths)
-// ՈՒՇԱԴՐՈՒԹՅՈՒՆ. Պետք է ստուգես, որ այս ուղիները ճիշտ են քո համակարգչում
-const apps = {
-    'pubg': '"C:\\Program Files (x86)\\Steam\\steamapps\\common\\PUBG\\TslGame\\Binaries\\Win64\\TslGame.exe"',
-    'cs': '"C:\\Program Files (x86)\\Steam\\steam.exe" -applaunch 730',
-    'roblox': 'start roblox://',
-    'capcut': 'start capcut',
-    'steam': 'start steam://'
-};
-
-console.log("🎮 Համակարգչի կառավարման բոտը պատրաստ է...");
-
-bot.on('message', (msg) => {
+bot.onText(/համար (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
-    const text = msg.text.toLowerCase();
+    const phoneNumber = match[1];
 
-    // 1. Համակարգչի ԱՆՋԱՏՈՒՄ
-    if (text === 'անջատել համակարգիչը') {
-        bot.sendMessage(chatId, "⚠️ Համակարգիչը կանջատվի 30 վայրկյանից:");
-        exec('shutdown /s /t 30');
-    }
-
-    // 2. Անջատման ՉԵՂԱՐԿՈՒՄ
-    if (text === 'չեղարկել') {
-        exec('shutdown /a');
-        bot.sendMessage(chatId, "✅ Անջատումը չեղարկվեց:");
-    }
-
-    // 3. Ծրագրերի ՄԻԱՑՈՒՄ
-    if (text.startsWith('բացիր ')) {
-        const appName = text.replace('բացիր ', '').trim();
-
-        if (apps[appName]) {
-            exec(apps[appName], (err) => {
-                if (err) {
-                    bot.sendMessage(chatId, `❌ Չհաջողվեց բացել ${appName}-ը:`);
-                } else {
-                    bot.sendMessage(chatId, `✅ ${appName}-ը միացված է:`);
-                }
-            });
-        } else {
-            bot.sendMessage(chatId, "❓ Այդ ծրագիրը ցուցակում չկա: Կարող ես գրել 'բացիր pubg' կամ 'բացիր cs':");
+    const opts = {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: '📞 Զանգել', callback_data: `call_${phoneNumber}` },
+                    { text: '💬 SMS', callback_data: `sms_${phoneNumber}` }
+                ]
+            ]
         }
+    };
+
+    bot.sendMessage(chatId, `Ընտրիր գործողությունը ${phoneNumber} համարի համար:`, opts);
+});
+
+// Կոճակների սեղմման մշակում
+bot.on('callback_query', (query) => {
+    const data = query.data;
+    const chatId = query.message.chat.id;
+
+    if (data.startsWith('call_')) {
+        const number = data.replace('call_', '');
+        // ADB հրաման՝ զանգահարելու համար
+        exec(`adb shell am start -a android.intent.action.CALL -d tel:${number}`, (err) => {
+            if (err) {
+                bot.sendMessage(chatId, "❌ ADB-ն միացված չէ կամ հեռախոսը կապված չէ:");
+            } else {
+                bot.sendMessage(chatId, `🚀 Զանգը դեպի ${number} սկսված է:`);
+            }
+        });
+    }
+
+    if (data.startsWith('sms_')) {
+        const number = data.replace('sms_', '');
+        // ADB հրաման՝ SMS պատուհանը բացելու համար (կամ կարելի է ուղղակի ուղարկել)
+        const message = "Barev, sa botic e";
+        exec(`adb shell am start -a android.intent.action.SENDTO -d sms:${number} --es sms_body "${message}" --ez exit_on_sent true`);
+        bot.sendMessage(chatId, `💬 SMS-ի պատուհանը բացվեց ${number}-ի համար:`);
     }
 });
